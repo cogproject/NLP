@@ -12,11 +12,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-fp = FontProperties(fname=r'C:\Users\user\Desktop\skypeDB\ipagp.ttf', size=14)
+fp = FontProperties(fname=r'C:\Users\kt\Desktop\neko\ipagp.ttf', size=14)
 
 import sys
 param = sys.argv
-infile = "XXXXXX.txt" #param[1]
+infile = "neko.txt.mecab.0" #param[1]
 
 f = open(infile, 'r', encoding='utf-8')
 line = f.readline() 
@@ -36,7 +36,7 @@ while line:
         arr = res.feature.split(",")
         class_1 = arr[0]
         frequency[class_1] += 1
-        if class_1 == '形容詞':
+        if class_1 == '感動詞':
             all_words.append(arr[6])
             #print (arr[6])
         res = res.next
@@ -53,6 +53,7 @@ for word in all_words:
         word_and_counts[word] += 1
     else:
         word_and_counts[word] = 1
+
 for w, c in sorted(word_and_counts.items(), key=lambda x: x[1], reverse=True):
  print (w, c)
  
@@ -60,11 +61,13 @@ h = sorted(word_and_counts.items(), key=lambda x: x[1], reverse=True);
 
 print (len(word_and_counts))
 
-for i in range(len(word_and_counts)):
+top = len(word_and_counts)
+
+for i in range(top):
     top_w.append(h[i][0])
     top_c.append((float)(h[i][1]))
 
-comp = [i for i in range(len(word_and_counts))]
+comp = [i for i in range(top)]
 
 plt.xticks(comp,top_w,rotation=90,fontproperties=fp,fontsize ="small")
 plt.ylabel(r"回数", fontsize="small", fontproperties=fp) # y軸
