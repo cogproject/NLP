@@ -12,7 +12,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-fp = FontProperties(fname=r'C:\Users\kt\Desktop\neko\ipagp.ttf', size=14)
+fp = FontProperties(fname=r'ipagp.ttf', size=14)
 
 import sys
 param = sys.argv
