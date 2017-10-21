@@ -1,0 +1,174 @@
+MeCabをPythonで使えるようにするための流れ
+MeCab本体を64-bitでコンパイル
+MeCabのPythonモジュールをビルドし、インストールする
+MeCabの動作確認
+
+実行環境
+Windows10 64-bit
+Python 3.5.2
+
+MeCabのインストール
+まずはMeCab本体(32-bit)をインストールします。
+下記のURLを開き、"Binary package for MS-Windows"にある"mecab-0.996.exe"をダウンロードし、インストールします。 インストール時に文字フォーマットを聞かれますので、UTF-8を選択します。
+
+http://taku910.github.io/mecab/#download
+
+
+MeCab本体の64-bit化
+Visual Studio 2015のインストール
+
+64-bitアプリケーションにするために、64-bitコンパイラでコンパイルを行います。MeCabはC++で記述されているようなので64-bit版VC++コンパイラを使います。そのVC++コンパイラをインストールするために、Visual Studioをインストールします。
+
+Visual Studio 2017ではうまくMeCabをインストールできませんでしたので、バージョンはVisual Studio 2015にした方が良いです。
+
+Visual Studio 2015は下記URLからダウンロードできます。 https://www.visualstudio.com/vs/older-downloads/
+
+インストール時にVC++のパッケージ類にチェックを入れて、VC++のパッケージ類をインストールします。
+
+Makefile.msvcの作成と修正
+再度、下記のMeCabのダウンロードページを開き、"Source"にある"mecab-0.996.tar.gz"をダウンロードし、解凍します。 http://taku910.github.io/mecab/#download
+
+解凍したフォルダーの中にsrcというフォルダーがあります。この中のMakefile.msvc.inをコピーして、Makefile.msvcに名前を変更します。 さらにこのファイルを開き、下記の通りに変更します。
+
+6行目
+LDFLAGS = /nologo /OPT:REF /OPT:ICF /LTCG /NXCOMPAT /DYNAMICBASE /MACHINE:X64 ADVAPI32.LIB
+
+/MACHINE:X86を/MACHINE:X64に変更します。
+
+ 8-9行目
+ -DDLL_EXPORT -DHAVE_GETENV -DHAVE_WINDOWS_H -DDIC_VERSION=102 \
+-DVERSION="\"0.996\"" -DPACKAGE="\"mecab\"" \
+
+-DDIC_VERSION、-DVERSIONを使用するバージョンに変更します。
+
+
+feature_index.cppの修正
+次にfeature_index.cppを開き、下記の通りに変更します。
+ 356行目
+ case 't':  os_ << (unsigned int)path->rnode->char_type;     break;
+ 
+ size_t型からunsinged int型に変更します。
+ 
+ writer.cppの修正
+ 最後にwriter.cppを開き、下記の通りに変更します。
+
+▼ 260行目
+
+case 'L': *os << (unsigned int)lattice->size(); break;
+変数latticeをunsigned int型にキャストします。
+
+MeCabを64-bitでコンパイル
+
+Visual Studio 2015をインストールすると、スタートメニューに"VS2015 x64 Native Tools Command Prompt"がインストールされているはずですので、これを実行します。
+
+先ほどのsrcフォルダーまで移動し、Make.batを実行します。
+
+いくつかWarningが出るかもしれませんが、エラー終了しなければ問題ないです。
+
+
+MeCab本体の関連ファイルの更新
+
+先ほどコンパイルによって生成したいくつかのファイルをMeCab本体にコピーして上書きします。
+
+srcフォルダー内にあるすべての.exeファイルとlibmecab.dllをC:\Program Files (x86)\MeCab\binにコピーして上書きします。 ※MeCabのインストール時にインストールフォルダーを変更された場合は変更先のフォルダーを対象となります。
+
+また、srcフォルダー内にあるすべての.libファイルをC:\Program Files (x86)\MeCab\sdkにコピーして上書きします。
+
+そして、C:\Program Files (x86)\MeCab\binを環境変数のPATHに追加します。 環境変数が有効化されるのはPCの再起動後なのでPCを再起動します。
+
+MeCab本体の64-bit化はこれで終了です。
+
+
+Python用MeCabモジュールのインストール
+
+3度目になりますが、下記のMeCabのダウンロードページを開き、"perl/ruby/python/java バインディング"の"ダウンロード"を開き、"mecab-python-0.996.tar.gz"をダウンロードし、解凍します。
+
+http://taku910.github.io/mecab/#download
+
+
+setup.pyの修正
+
+解凍したフォルダーの中にあるsetup.pyを開き、下記の通りに変更します。
+
+▼ 13行目
+
+version = "0.996",
+versionを実際の数値を直接代入します。
+
+▼ 18~20行目
+
+include_dirs=[r"C:\Program Files (x86)\MeCab\sdk"],
+library_dirs=[r"C:\Program Files (x86)\MeCab\sdk"],
+libraries=["libmecab"])
+include_dirsとlibrary_dirsをsdkフォルダーの値に直接代入します。また、librariesにこちらも直接ファイル名を代入します。
+
+これらはすべてWindowsではmecab-configというものが入っていないための対処です。
+
+下記の通り、書き換え
+
+####
+#!/usr/bin/env python
+from distutils.core import setup,Extension,os
+setup(name = "mecab-python",
+version = "0.996",
+py_modules=["MeCab"],
+ext_modules = [
+Extension("_MeCab",
+["MeCab_wrap.cxx",],
+include_dirs=[r"C:\Mecab\sdk"],
+library_dirs=[r"C:\Mecab\sdk"],
+libraries=["libmecab"])
+])
+####
+
+
+
+mecab.hに追記
+
+C:\Program Files (x86)\MeCab\sdk\mecab.hを下記の通りに1行追記をします。
+
+▼ 775行目辺り
+
+/**
+ * Lattice class
+ */
+class MECAB_DLL_CLASS_EXTERN Lattice {
+public:
+ 
+  virtual void set_result(const char *str) = 0; //この１行を追加
+ 
+  /**
+   * Clear all internal lattice data.
+   */
+  virtual void clear()              = 0;
+  
+  
+  Python用MeCabモジュールのビルドとインストール
+  
+  先ほど編集したsetup.pyがあるフォルダーに移動します。
+  
+python setup.py buildとその後にpython setup.py installを実行します。その実行例は下記のようになります。
+
+インストール確認
+
+MeCab用Pythonモジュールが問題なくインストールできていれば、下記のPython構文が通るはずです。
+
+$ python
+>>> import MeCab
+
+これが通ればインストールは完了です。
+
+MeCab実行時のトラブルシューティング
+
+ただし、環境によっては下記のようなエラーが出る場合があります。 （何の差分によってこのエラーが出たり、出なかったりするのかまでは調べていません。）
+
+$ python
+>>> import MeCab
+>>> m = MeCab.Tagger()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\<UserName>\AppData\Local\conda\conda\envs\<VirEnv>\lib\site-packages\MeCab.py", line 307, in __init__
+    this = _MeCab.new_Tagger(*args)
+RuntimeError
+この場合には、新しくMECABRCという環境変数を追加します。値は、C:\Program Files (x86)\MeCab\etc\mecabrcとします。
+
