@@ -1,110 +1,108 @@
-MeCab��Python�Ŏg����悤�ɂ��邽�߂̗���
-MeCab�{�̂�64-bit�ŃR���p�C��
-MeCab��Python���W���[�����r���h���A�C���X�g�[������
-MeCab�̓���m�F
+■MeCabをPythonで使えるようにするための流れ
+MeCab本体を64-bitでコンパイル
+MeCabのPythonモジュールをビルドし、インストールする
+MeCabの動作確認
 
-���s��
+■実行環境
 Windows10 64-bit
 Python 3.5.2
 
-MeCab�̃C���X�g�[��
-�܂���MeCab�{��(32-bit)���C���X�g�[�����܂��B
-���L��URL���J���A"Binary package for MS-Windows"�ɂ���"mecab-0.996.exe"���_�E�����[�h���A�C���X�g�[�����܂��B �C���X�g�[�����ɕ����t�H�[�}�b�g�𕷂���܂��̂ŁAUTF-8��I�����܂��B
+■MeCabのインストール
+まずはMeCab本体(32-bit)をインストールします。
+下記のURLを開き、"Binary package for MS-Windows"にある"mecab-0.996.exe"をダウンロードし、インストールします。 インストール時に文字フォーマットを聞かれますので、UTF-8を選択します。
 
 http://taku910.github.io/mecab/#download
 
 
-MeCab�{�̂�64-bit��
-Visual Studio 2015�̃C���X�g�[��
+■MeCab本体の64-bit化
+Visual Studio 2015のインストール
 
-64-bit�A�v���P�[�V�����ɂ��邽�߂ɁA64-bit�R���p�C���ŃR���p�C�����s���܂��BMeCab��C++�ŋL�q����Ă���悤�Ȃ̂�64-bit��VC++�R���p�C�����g���܂��B����VC++�R���p�C�����C���X�g�[�����邽�߂ɁAVisual Studio���C���X�g�[�����܂��B
+64-bitアプリケーションにするために、64-bitコンパイラでコンパイルを行います。MeCabはC++で記述されているようなので64-bit版VC++コンパイラを使います。そのVC++コンパイラをインストールするために、Visual Studioをインストールします。
 
-Visual Studio 2017�ł͂��܂�MeCab���C���X�g�[���ł��܂���ł����̂ŁA�o�[�W������Visual Studio 2015�ɂ��������ǂ��ł��B
+Visual Studio 2017ではうまくMeCabをインストールできませんでしたので、バージョンはVisual Studio 2015にした方が良いです。
 
-Visual Studio 2015�͉��LURL����_�E�����[�h�ł��܂��B https://www.visualstudio.com/vs/older-downloads/
+Visual Studio 2015は下記URLからダウンロードできます。 https://www.visualstudio.com/vs/older-downloads/
 
-�C���X�g�[������VC++�̃p�b�P�[�W�ނɃ`�F�b�N�����āAVC++�̃p�b�P�[�W�ނ��C���X�g�[�����܂��B
+インストール時にVC++のパッケージ類にチェックを入れて、VC++のパッケージ類をインストールします。
 
-Makefile.msvc�̍쐬�ƏC��
-�ēx�A���L��MeCab�̃_�E�����[�h�y�[�W���J���A"Source"�ɂ���"mecab-0.996.tar.gz"���_�E�����[�h���A�𓀂��܂��B http://taku910.github.io/mecab/#download
+Makefile.msvcの作成と修正
+再度、下記のMeCabのダウンロードページを開き、"Source"にある"mecab-0.996.tar.gz"をダウンロードし、解凍します。 http://taku910.github.io/mecab/#download
 
-�𓀂����t�H���_�[�̒���src�Ƃ����t�H���_�[������܂��B���̒���Makefile.msvc.in���R�s�[���āAMakefile.msvc�ɖ��O��ύX���܂��B ����ɂ��̃t�@�C�����J���A���L�̒ʂ�ɕύX���܂��B
+解凍したフォルダーの中にsrcというフォルダーがあります。この中のMakefile.msvc.inをコピーして、Makefile.msvcに名前を変更します。 さらにこのファイルを開き、下記の通りに変更します。
 
-6�s��
+6行目
 LDFLAGS = /nologo /OPT:REF /OPT:ICF /LTCG /NXCOMPAT /DYNAMICBASE /MACHINE:X64 ADVAPI32.LIB
 
-/MACHINE:X86��/MACHINE:X64�ɕύX���܂��B
+/MACHINE:X86を/MACHINE:X64に変更します。
 
- 8-9�s��
+ 8-9行目
  -DDLL_EXPORT -DHAVE_GETENV -DHAVE_WINDOWS_H -DDIC_VERSION=102 \
 -DVERSION="\"0.996\"" -DPACKAGE="\"mecab\"" \
 
--DDIC_VERSION�A-DVERSION���g�p����o�[�W�����ɕύX���܂��B
+-DDIC_VERSION、-DVERSIONを使用するバージョンに変更します。
 
 
-feature_index.cpp�̏C��
-����feature_index.cpp���J���A���L�̒ʂ�ɕύX���܂��B
- 356�s��
+■feature_index.cppの修正
+次にfeature_index.cppを開き、下記の通りに変更します。
+ 356行目
  case 't':  os_ << (unsigned int)path->rnode->char_type;     break;
  
- size_t�^����unsinged int�^�ɕύX���܂��B
+ size_t型からunsinged int型に変更します。
  
- writer.cpp�̏C��
- �Ō��writer.cpp���J���A���L�̒ʂ�ɕύX���܂��B
+■writer.cppの修正
+ 最後にwriter.cppを開き、下記の通りに変更します。
 
-�� 260�s��
+▼ 260行目
 
 case 'L': *os << (unsigned int)lattice->size(); break;
-�ϐ�lattice��unsigned int�^�ɃL���X�g���܂��B
+変数latticeをunsigned int型にキャストします。
 
-MeCab��64-bit�ŃR���p�C��
+■MeCabを64-bitでコンパイル
 
-Visual Studio 2015���C���X�g�[������ƁA�X�^�[�g���j���[��"VS2015 x64 Native Tools Command Prompt"���C���X�g�[������Ă���͂��ł��̂ŁA��������s���܂��B
+Visual Studio 2015をインストールすると、スタートメニューに"VS2015 x64 Native Tools Command Prompt"がインストールされているはずですので、これを実行します。
 
-��قǂ�src�t�H���_�[�܂ňړ����AMake.bat�����s���܂��B
+先ほどのsrcフォルダーまで移動し、Make.batを実行します。
 
-������Warning���o�邩������܂��񂪁A�G���[�I�����Ȃ���Ζ��Ȃ��ł��B
-
-
-MeCab�{�̂̊֘A�t�@�C���̍X�V
-
-��قǃR���p�C���ɂ���Đ��������������̃t�@�C����MeCab�{�̂ɃR�s�[���ď㏑�����܂��B
-
-src�t�H���_�[���ɂ��邷�ׂĂ�.exe�t�@�C����libmecab.dll��C:\Program Files (x86)\MeCab\bin�ɃR�s�[���ď㏑�����܂��B ��MeCab�̃C���X�g�[�����ɃC���X�g�[���t�H���_�[��ύX���ꂽ�ꍇ�͕ύX��̃t�H���_�[��ΏۂƂȂ�܂��B
-
-�܂��Asrc�t�H���_�[���ɂ��邷�ׂĂ�.lib�t�@�C����C:\Program Files (x86)\MeCab\sdk�ɃR�s�[���ď㏑�����܂��B
-
-�����āAC:\Program Files (x86)\MeCab\bin�����ϐ���PATH�ɒǉ����܂��B ���ϐ����L���������̂�PC�̍ċN����Ȃ̂�PC���ċN�����܂��B
-
-MeCab�{�̂�64-bit���͂���ŏI���ł��B
+いくつかWarningが出るかもしれませんが、エラー終了しなければ問題ないです。
 
 
-Python�pMeCab���W���[���̃C���X�g�[��
+■MeCab本体の関連ファイルの更新
 
-3�x�ڂɂȂ�܂����A���L��MeCab�̃_�E�����[�h�y�[�W���J���A"perl/ruby/python/java �o�C���f�B���O"��"�_�E�����[�h"���J���A"mecab-python-0.996.tar.gz"���_�E�����[�h���A�𓀂��܂��B
+先ほどコンパイルによって生成したいくつかのファイルをMeCab本体にコピーして上書きします。
+
+srcフォルダー内にあるすべての.exeファイルとlibmecab.dllをC:\Program Files (x86)\MeCab\binにコピーして上書きします。 ※MeCabのインストール時にインストールフォルダーを変更された場合は変更先のフォルダーを対象となります。
+
+また、srcフォルダー内にあるすべての.libファイルをC:\Program Files (x86)\MeCab\sdkにコピーして上書きします。
+
+そして、C:\Program Files (x86)\MeCab\binを環境変数のPATHに追加します。 環境変数が有効化されるのはPCの再起動後なのでPCを再起動します。
+
+MeCab本体の64-bit化はこれで終了です。
+
+■Python用MeCabモジュールのインストール
+
+3度目になりますが、下記のMeCabのダウンロードページを開き、"perl/ruby/python/java バインディング"の"ダウンロード"を開き、"mecab-python-0.996.tar.gz"をダウンロードし、解凍します。
 
 http://taku910.github.io/mecab/#download
 
+■setup.pyの修正
 
-setup.py�̏C��
+解凍したフォルダーの中にあるsetup.pyを開き、下記の通りに変更します。
 
-�𓀂����t�H���_�[�̒��ɂ���setup.py���J���A���L�̒ʂ�ɕύX���܂��B
-
-�� 13�s��
+▼ 13行目
 
 version = "0.996",
-version�����ۂ̐��l�𒼐ڑ�����܂��B
+versionを実際の数値を直接代入します。
 
-�� 18~20�s��
+▼ 18~20行目
 
 include_dirs=[r"C:\Program Files (x86)\MeCab\sdk"],
 library_dirs=[r"C:\Program Files (x86)\MeCab\sdk"],
 libraries=["libmecab"])
-include_dirs��library_dirs��sdk�t�H���_�[�̒l�ɒ��ڑ�����܂��B�܂��Alibraries�ɂ���������ڃt�@�C�����������܂��B
+include_dirsとlibrary_dirsをsdkフォルダーの値に直接代入します。また、librariesにこちらも直接ファイル名を代入します。
 
-�����͂��ׂ�Windows�ł�mecab-config�Ƃ������̂������Ă��Ȃ����߂̑Ώ��ł��B
+これらはすべてWindowsではmecab-configというものが入っていないための対処です。
 
-���L�̒ʂ�A��������
+下記の通り、書き換え
 
 ####
 #!/usr/bin/env python
@@ -123,11 +121,11 @@ libraries=["libmecab"])
 
 
 
-mecab.h�ɒǋL
+■mecab.hに追記
 
-C:\Program Files (x86)\MeCab\sdk\mecab.h�����L�̒ʂ��1�s�ǋL�����܂��B
+C:\Program Files (x86)\MeCab\sdk\mecab.hを下記の通りに1行追記をします。
 
-�� 775�s�ڕӂ�
+▼ 775行目辺り
 
 /**
  * Lattice class
@@ -135,7 +133,7 @@ C:\Program Files (x86)\MeCab\sdk\mecab.h�����L�̒ʂ��1�s�ǋL�����܂��B
 class MECAB_DLL_CLASS_EXTERN Lattice {
 public:
  
-  virtual void set_result(const char *str) = 0; //���̂P�s��ǉ�
+  virtual void set_result(const char *str) = 0; //この１行を追加
  
   /**
    * Clear all internal lattice data.
@@ -143,24 +141,24 @@ public:
   virtual void clear()              = 0;
   
   
-  Python�pMeCab���W���[���̃r���h�ƃC���X�g�[��
+■Python用MeCabモジュールのビルドとインストール
   
-  ��قǕҏW����setup.py������t�H���_�[�Ɉړ����܂��B
+  先ほど編集したsetup.pyがあるフォルダーに移動します。
   
-python setup.py build�Ƃ��̌��python setup.py install�����s���܂��B���̎��s��͉��L�̂悤�ɂȂ�܂��B
+python setup.py buildとその後にpython setup.py installを実行します。その実行例は下記のようになります。
 
-�C���X�g�[���m�F
+インストール確認
 
-MeCab�pPython���W���[�������Ȃ��C���X�g�[���ł��Ă���΁A���L��Python�\�����ʂ�͂��ł��B
+MeCab用Pythonモジュールが問題なくインストールできていれば、下記のPython構文が通るはずです。
 
 $ python
 >>> import MeCab
 
-���ꂪ�ʂ�΃C���X�g�[���͊����ł��B
+これが通ればインストールは完了です。
 
-MeCab���s���̃g���u���V���[�e�B���O
+■MeCab実行時のトラブルシューティング
 
-�������A���ɂ���Ă͉��L�̂悤�ȃG���[���o��ꍇ������܂��B �i���̍����ɂ���Ă��̃G���[���o����A�o�Ȃ������肷��̂��܂ł͒��ׂĂ��܂���B�j
+ただし、環境によっては下記のようなエラーが出る場合があります。 （何の差分によってこのエラーが出たり、出なかったりするのかまでは調べていません。）
 
 $ python
 >>> import MeCab
@@ -170,5 +168,5 @@ Traceback (most recent call last):
   File "C:\Users\<UserName>\AppData\Local\conda\conda\envs\<VirEnv>\lib\site-packages\MeCab.py", line 307, in __init__
     this = _MeCab.new_Tagger(*args)
 RuntimeError
-���̏ꍇ�ɂ́A�V����MECABRC�Ƃ������ϐ���ǉ����܂��B�l�́AC:\Program Files (x86)\MeCab\etc\mecabrc�Ƃ��܂��B
+この場合には、新しくMECABRCという環境変数を追加します。値は、C:\Program Files (x86)\MeCab\etc\mecabrcとします。
 
