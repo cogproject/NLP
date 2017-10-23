@@ -1,4 +1,14 @@
 memo
+
+MB:P8H61-M LE USB3
+https://www.asus.com/jp/Motherboards/P8H61M_LEUSB3/
+
+GPU:GEFORCE GTX 1060
+https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1060/
+
+
+
+
 <pre>
 # 結果の確認
 for j in range(len(sentences)):
